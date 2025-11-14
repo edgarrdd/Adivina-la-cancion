@@ -1,5 +1,5 @@
 const clientId = '1a1298904e0a4ca5a6ed6c58e222d083'; 
-const redirectUri = 'http://localhost:3000/callback'; 
+const redirectUri = 'https://edgarrdd.github.io/Adivina-la-cancion/callback'; 
 const scopes = [
   'streaming',
   'user-read-email',
