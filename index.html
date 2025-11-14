@@ -2,15 +2,21 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adivina la Canción</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Adivina la canción</title>
 </head>
 <body>
-  <h1>🎵 Adivina la Canción</h1>
+  <h1>Adivina la canción</h1>
   <button id="login-button">Iniciar sesión con Spotify</button>
 
-  <script src="javascript.js"></script>
+  <div id="juego" style="display:none;">
+    <p>Escucha el fragmento y elige la canción correcta:</p>
+    <audio id="preview" controls></audio>
+    <div id="opciones"></div>
+    <p id="resultado"></p>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
+
 
