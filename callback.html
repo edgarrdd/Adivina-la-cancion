@@ -37,7 +37,6 @@
 
       if (data.access_token) {
         localStorage.setItem("spotify_token", data.access_token);
-        alert("¡Autenticación exitosa!");
         window.location.href = "index.html";
       } else {
         alert("Error al obtener el token: " + JSON.stringify(data));
@@ -48,5 +47,3 @@
   </script>
 </body>
 </html>
-
-
