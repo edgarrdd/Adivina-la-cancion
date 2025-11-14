@@ -41,7 +41,7 @@ async function iniciarJuego() {
   const token = localStorage.getItem("spotify_token");
   if (!token) return;
 
-  const artista = "Bad Bunny"; // Puedes cambiarlo o hacerlo dinámico
+  const artista = "Bad Bunny"; // Cambia o hazlo dinámico
   const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(artista)}&type=track&limit=5`, {
     headers: { Authorization: `Bearer ${token}` }
   });
@@ -72,4 +72,11 @@ async function iniciarJuego() {
   });
 }
 
-window.onload = iniciarJuego;
+// Al cargar index.html, si ya hay token, inicia el juego
+window.onload = () => {
+  const token = localStorage.getItem("spotify_token");
+  if (token) {
+    iniciarJuego();
+  }
+};
+
