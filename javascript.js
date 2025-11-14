@@ -1,5 +1,6 @@
 window.onload = () => {
-  const clientId = '1a1298904e0a4ca5a6ed6c658e222d083';
+const clientId = '1a1298904e0a4ca5a6ed6c58e222d083';
+
   const redirectUri = 'https://edgarrdd.github.io/Adivina-la-cancion/callback';
   const scopes = [
     'streaming',
@@ -21,4 +22,5 @@ window.onload = () => {
     console.error("No se encontró el botón con id 'login-button'");
   }
 };
+
 
