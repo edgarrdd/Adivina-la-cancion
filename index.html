@@ -3,10 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <title>Adivina la canción</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>Adivina la canción</h1>
   <button id="login-button">Iniciar sesión con Spotify</button>
+
+  <div id="busqueda" style="display:none;">
+    <input type="text" id="artista" placeholder="Escribe un artista">
+    <button onclick="iniciarJuego()">Buscar canciones</button>
+  </div>
 
   <div id="juego" style="display:none;">
     <p>Escucha el fragmento y elige la canción correcta:</p>
@@ -18,4 +24,5 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
