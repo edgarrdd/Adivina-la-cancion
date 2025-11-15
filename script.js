@@ -55,19 +55,22 @@ async function iniciarJuego() {
     const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(artista)}&type=track&limit=10`, {
       headers: { Authorization: `Bearer ${token}` }
     });
-    const data = await res.json();
 
-    // 👀 Depuración: ver todo lo que devuelve Spotify
+    if (!res.ok) {
+      console.error("Error HTTP:", res.status, res.statusText);
+      alert("Error de autenticación con Spotify. Intenta iniciar sesión nuevamente.");
+      return;
+    }
+
+    const data = await res.json();
     console.log("Respuesta completa de Spotify:", data);
 
-    if (!data.tracks || data.tracks.items.length === 0) {
+    if (!data.tracks || !Array.isArray(data.tracks.items) || data.tracks.items.length === 0) {
       alert("No se encontraron canciones para ese artista.");
       return;
     }
 
     const tracks = data.tracks.items.filter(t => t.preview_url);
-
-    // 👀 Depuración: ver cuántos previews hay
     console.log("Tracks con preview:", tracks);
 
     if (tracks.length === 0) {
@@ -107,4 +110,5 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("busqueda").style.display = "block";
   }
 });
+
 
