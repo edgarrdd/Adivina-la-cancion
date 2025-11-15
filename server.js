@@ -5,15 +5,17 @@ const axios = require('axios');
 const cors = require('cors');
 
 const app = express();
-const PORT = 3000;
 
-// ⚠️ Usa variables de entorno (.env)
-const CLIENT_ID = process.env.CLIENT_ID;
-const CLIENT_SECRET = process.env.CLIENT_SECRET;
+// Render asigna un puerto dinámico
+const PORT = process.env.PORT || 3000;
 
-// Permitir peticiones desde el frontend en 5500
+// Permitir CORS desde GitHub Pages y localhost
 app.use(cors({
-    origin: ['http://127.0.0.1:5500', 'http://localhost:5500']
+    origin: [
+        'https://edgarrdd.github.io',
+        'http://127.0.0.1:5500',
+        'http://localhost:5500'
+    ]
 }));
 
 // Obtener token de Spotify
@@ -24,7 +26,8 @@ async function getSpotifyToken() {
         {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Basic ' + Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')
+                'Authorization':
+                    'Basic ' + Buffer.from(`${process.env.CLIENT_ID}:${process.env.CLIENT_SECRET}`).toString('base64')
             }
         }
     );
@@ -74,6 +77,13 @@ app.get('/api/get-tracks/:artist', async (req, res) => {
     }
 });
 
+// Iniciar servidor
+app.listen(PORT, () =>
+    console.log(`Servidor backend ON en puerto ${PORT}`)
+);
+
+
 app.listen(PORT, () =>
     console.log(`Servidor backend ON en http://127.0.0.1:${PORT}`)
 );
+
