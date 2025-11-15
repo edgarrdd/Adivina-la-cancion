@@ -113,10 +113,3 @@ function nextSong() {
         startRound();
     }, 1500);
 }
-
-
-    }, 1500);
-}
-
-
-
