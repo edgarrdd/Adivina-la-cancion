@@ -1,88 +1,61 @@
-const BACKEND_URL = 'http://127.0.0.1:3000/api/get-tracks';
-const PREVIEW_DURATION = 15;
+// URL de la API de iTunes
+const API_URL = "https://itunes.apple.com/search?limit=25&media=music&term=";
 
-const artistInput = document.getElementById('artistInput');
-const startGameButton = document.getElementById('startGameButton');
-const gameSection = document.getElementById('game');
-const setupSection = document.getElementById('setup');
-const messageElement = document.getElementById('message');
-const songGuessInput = document.getElementById('songGuess');
-const submitGuessButton = document.getElementById('submitGuessButton');
-const skipButton = document.getElementById('skipButton');
-const feedbackElement = document.getElementById('feedback');
-const scoreElement = document.getElementById('currentScore');
-
-let availableTracks = [];
-let currentTrack = null;
-let currentScore = 0;
-let trackIndex = 0;
-
+// Elementos del DOM
+const artistInput = document.getElementById("artistInput");
+const startGameButton = document.getElementById("startGameButton");
+const messageElement = document.getElementById("message");
 const audioPlayer = document.getElementById("audioPlayer");
 
+let tracks = [];
+let selectedTrack = null;
+
+// Evento del botón
+startGameButton.addEventListener("click", () => {
+    const artist = artistInput.value.trim();
+
+    if (artist === "") {
+        messageElement.textContent = "Introduce un artista.";
+        return;
+    }
+
+    fetchArtistTracks(artist);
+});
+
+// Función para obtener canciones desde iTunes
 async function fetchArtistTracks(artistName) {
-    messageElement.textContent = "Buscando canciones en Spotify...";
+    messageElement.textContent = "Buscando canciones...";
     startGameButton.disabled = true;
 
     try {
-        const res = await fetch(`${BACKEND_URL}/${artistName}`);
+        const url = API_URL + encodeURIComponent(artistName);
+        const res = await fetch(url);
         const data = await res.json();
 
-        if (!res.ok) {
-            messageElement.textContent = data.error;
+        // Filtrar solo canciones con preview
+        tracks = data.results.filter(t => t.previewUrl);
+
+        if (tracks.length === 0) {
+            messageElement.textContent = "No hay previews disponibles.";
             startGameButton.disabled = false;
             return;
         }
 
-        availableTracks = data.tracks;
-
-        availableTracks.sort(() => Math.random() - 0.5);
-
-        setupSection.classList.add('hidden');
-        gameSection.classList.remove('hidden');
-
-        currentScore = 0;
-        trackIndex = 0;
-
-        nextTrack();
-
-    } catch (err) {
+        startGame();
+    } catch (error) {
+        console.error("Error:", error);
         messageElement.textContent = "Error conectando al servidor.";
     }
+
+    startGameButton.disabled = false;
 }
 
-function nextTrack() {
-    if (trackIndex >= availableTracks.length) {
-        audioPlayer.pause();
-        feedbackElement.innerHTML = `<h2>🎉 Fin del juego — Puntos: ${currentScore}</h2>`;
-        return;
-    }
+// Iniciar el juego con una canción aleatoria
+function startGame() {
+    selectedTrack = tracks[Math.floor(Math.random() * tracks.length)];
 
-    currentTrack = availableTracks[trackIndex];
-    trackIndex++;
-
-    audioPlayer.src = currentTrack.preview;
+    audioPlayer.src = selectedTrack.previewUrl;
     audioPlayer.play();
 
-    setTimeout(() => audioPlayer.pause(), PREVIEW_DURATION * 1000);
-
-    feedbackElement.textContent = `🎧 Canción ${trackIndex}/${availableTracks.length}`;
+    messageElement.textContent = "Escucha y adivina la canción!";
 }
-
-function checkGuess() {
-    const normalize = t => t.toLowerCase().replace(/[^\w\s]/g, '').trim();
-    const guess = normalize(songGuessInput.value);
-    const correct = normalize(currentTrack.name);
-
-    if (guess === correct || correct.includes(guess)) {
-        currentScore += 10;
-        scoreElement.textContent = currentScore;
-        feedbackElement.textContent = `✔ Correcto: ${currentTrack.name}`;
-        setTimeout(nextTrack, 1500);
-    } else {
-        feedbackElement.textContent = "❌ Incorrecto, intenta de nuevo.";
-    }
-}
-
-startGameButton.onclick = () => fetchArtistTracks(artistInput.value);
-submitGuessButton.onclick = checkGuess;
-skipButton.onclick = nextTrack;
