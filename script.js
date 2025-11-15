@@ -1,7 +1,4 @@
-// script.js
-// REEMPLAZA la URL por la de tu backend desplegado en Render
-const BACKEND_URL = 'https://TU_BACKEND.onrender.com/api/get-tracks';
-
+const BACKEND_URL = 'https://spotify-backend-8i9z.onrender.com/api/get-tracks';
 const PREVIEW_DURATION = 15;
 
 const artistInput = document.getElementById('artistInput');
@@ -27,19 +24,19 @@ async function fetchArtistTracks(artistName) {
     startGameButton.disabled = true;
 
     try {
-        const res = await fetch(`${BACKEND_URL}/${encodeURIComponent(artistName)}`);
+        const res = await fetch(`${BACKEND_URL}/${artistName}`);
         const data = await res.json();
 
         if (!res.ok) {
-            messageElement.textContent = data.error || 'Error del servidor.';
+            messageElement.textContent = data.error;
             startGameButton.disabled = false;
             return;
         }
 
         availableTracks = data.tracks;
 
-        if (!availableTracks || availableTracks.length < 1) {
-            messageElement.textContent = "No hay canciones con preview para este artista.";
+        if (availableTracks.length < 5) {
+            messageElement.textContent = "Pocas canciones con preview.";
             startGameButton.disabled = false;
             return;
         }
@@ -51,20 +48,18 @@ async function fetchArtistTracks(artistName) {
 
         currentScore = 0;
         trackIndex = 0;
-        scoreElement.textContent = currentScore;
+
         nextTrack();
 
     } catch (err) {
-        console.error(err);
-        messageElement.textContent = "Error conectando al servidor.";
-        startGameButton.disabled = false;
+        messageElement.textContent = "Error conectando con el backend.";
     }
 }
 
 function nextTrack() {
     if (trackIndex >= availableTracks.length) {
         audioPlayer.pause();
-        feedbackElement.innerHTML = `<h2>🎉 Fin del juego — Puntos: ${currentScore}</h2>`;
+        feedbackElement.innerHTML = `<h2>🎉 ¡Fin del juego! Puntuación: ${currentScore}</h2>`;
         return;
     }
 
@@ -77,38 +72,34 @@ function nextTrack() {
 
     setTimeout(() => audioPlayer.pause(), PREVIEW_DURATION * 1000);
 
-    feedbackElement.textContent = `🎧 Canción ${trackIndex}/${availableTracks.length}`;
+    feedbackElement.textContent = `Adivina la canción ${trackIndex} / ${availableTracks.length}`;
 }
 
 function checkGuess() {
-    if (!currentTrack) return;
     const normalize = t => t.toLowerCase().replace(/[^\w\s]/g, '').trim();
-    const guess = normalize(songGuessInput.value || '');
-    const correct = normalize(currentTrack.name || '');
-
-    if (!guess) {
-        feedbackElement.textContent = 'Introduce una respuesta.';
-        return;
-    }
+    const guess = normalize(songGuessInput.value);
+    const correct = normalize(currentTrack.name);
 
     if (guess === correct || correct.includes(guess)) {
         currentScore += 10;
-        scoreElement.textContent = currentScore;
         feedbackElement.textContent = `✔ Correcto: ${currentTrack.name}`;
-        songGuessInput.value = '';
+        scoreElement.textContent = currentScore;
+
         setTimeout(nextTrack, 1500);
     } else {
         feedbackElement.textContent = `❌ Incorrecto. Sigue intentando.`;
     }
 }
 
-startGameButton.onclick = () => {
-    const artist = artistInput.value.trim();
-    if (!artist) {
-        messageElement.textContent = 'Introduce el nombre del artista.';
-        return;
-    }
-    fetchArtistTracks(artist);
+startGameButton.addEventListener("click", () => {
+    if (artistInput.value.trim() === "") return;
+    fetchArtistTracks(artistInput.value.trim());
+});
+
+submitGuessButton.addEventListener("click", checkGuess);
+skipButton.addEventListener("click", nextTrack);
+
 };
 submitGuessButton.onclick = checkGuess;
 skipButton.onclick = nextTrack;
+
