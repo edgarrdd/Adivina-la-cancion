@@ -19,6 +19,7 @@ button {
   cursor: pointer;
   border-radius: 5px;
   font-size: 16px;
+  transition: background 0.3s ease;
 }
 
 button:hover {
@@ -51,6 +52,7 @@ button:hover {
   padding: 10px;
   border-radius: 5px;
   min-width: 150px;
+  transition: all 0.3s ease;
 }
 
 .opcion:hover {
@@ -62,8 +64,8 @@ audio {
   margin: 15px 0;
 }
 
-
 #login-button {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
+
 
