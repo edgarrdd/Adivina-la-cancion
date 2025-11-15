@@ -1,43 +1,29 @@
-// PKCE helpers
-function generateRandomString(length) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  return Array.from(crypto.getRandomValues(new Uint8Array(length)))
-    .map(x => chars[x % chars.length]).join('');
-}
+const clientId = '1a1298904e0a4ca5a6ed6c58e222d083'; // tu Client ID
+const redirectUri = 'https://edgarrdd.github.io/Adivina-la-cancion/index.html';
+const scopes = ['user-read-email','user-read-private'];
 
-function base64urlencode(str) {
-  return btoa(String.fromCharCode.apply(null, new Uint8Array(str)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-async function generateCodeChallenge(codeVerifier) {
-  const data = new TextEncoder().encode(codeVerifier);
-  const digest = await crypto.subtle.digest('SHA-256', data);
-  return base64urlencode(digest);
-}
-
-// Spotify config
-const clientId = '1a1298904e0a4ca5a6ed6c58e222d083';
-const redirectUri = 'https://edgarrdd.github.io/Adivina-la-cancion/callback';
-const scopes = [
-  'streaming',
-  'user-read-email',
-  'user-read-private',
-  'user-modify-playback-state',
-  'user-read-playback-state'
-];
-
-// Botón de login
-document.getElementById("login-button").addEventListener("click", async () => {
-  const codeVerifier = generateRandomString(128);
-  const codeChallenge = await generateCodeChallenge(codeVerifier);
-  localStorage.setItem("code_verifier", codeVerifier);
-
-  const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&scope=${scopes.join('%20')}&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
+document.getElementById("login-button").addEventListener("click", () => {
+  const authUrl = `https://accounts.spotify.com/authorize?response_type=token&client_id=${clientId}&scope=${scopes.join('%20')}&redirect_uri=${encodeURIComponent(redirectUri)}`;
   window.location.href = authUrl;
 });
 
-// Juego: buscar canciones y mostrar opciones
+// Extraer token del URL si viene de Spotify
+window.addEventListener("DOMContentLoaded", () => {
+  const hash = window.location.hash;
+  if (hash.includes("access_token")) {
+    const params = new URLSearchParams(hash.substring(1));
+    const token = params.get("access_token");
+    localStorage.setItem("spotify_token", token);
+    window.location.hash = ""; // limpiar URL
+  }
+
+  const token = localStorage.getItem("spotify_token");
+  if (token) {
+    document.getElementById("login-button").style.display = "none";
+    document.getElementById("busqueda").style.display = "block";
+  }
+});
+
 async function iniciarJuego() {
   const token = localStorage.getItem("spotify_token");
   if (!token) {
@@ -71,8 +57,6 @@ async function iniciarJuego() {
     }
 
     const tracks = data.tracks.items.filter(t => t.preview_url);
-    console.log("Tracks con preview:", tracks);
-
     if (tracks.length === 0) {
       alert("Este artista no tiene previews disponibles en Spotify.");
       return;
@@ -89,7 +73,6 @@ async function iniciarJuego() {
     opciones.forEach(track => {
       const btn = document.createElement("button");
       btn.textContent = track.name;
-      btn.className = "opcion";
       btn.onclick = () => {
         document.getElementById("resultado").textContent =
           track.name === correct.name ? "✅ ¡Correcto!" : `❌ Incorrecto. Era: ${correct.name}`;
@@ -101,14 +84,3 @@ async function iniciarJuego() {
     alert("Error al conectar con Spotify. Revisa la consola para más detalles.");
   }
 }
-
-// Al cargar index.html, si ya hay token, muestra el campo de búsqueda
-window.addEventListener("DOMContentLoaded", () => {
-  const token = localStorage.getItem("spotify_token");
-  if (token) {
-    document.getElementById("login-button").style.display = "none";
-    document.getElementById("busqueda").style.display = "block";
-  }
-});
-
-
