@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adivina la Canción 🎧</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Adivina la Canción </h1>
+
+        <section id="setup">
+            <h2>Configuración del Juego</h2>
+            <input type="text" id="artistInput" placeholder="Busca un artista (Ej: Queen)">
+            <button id="startGameButton" disabled>Iniciar Juego</button>
+            <p id="message">¡Inicia tu servidor Node.js (backend) antes de jugar!</p>
+        </section>
+
+        <section id="game" class="hidden">
+            <div id="playerArea">
+               <p>Escucha el fragmento y adivina el nombre de la canción.</p>
+               <div id="youtubePlayer"></div> 
+            </div>
+            
+            <div id="scoreArea">
+                <h3>Puntuación: <span id="currentScore">0</span></h3>
+            </div>
+
+            <div id="guessArea">
+                <input type="text" id="songGuess" placeholder="Escribe tu respuesta">
+                <button id="submitGuessButton">Adivinar</button>
+                <button id="skipButton">Saltar</button>
+            </div>
+            
+            <p id="feedback"></p>
+        </section>
+    </div>
+
+    <script src="http://googleusercontent.com/youtube.com/iframe_api"></script>
+
+    <script src="script.js"></script>
+</body>
+</html>
