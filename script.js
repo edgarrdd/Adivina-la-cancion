@@ -1,115 +1,67 @@
 // URL de la API de iTunes
 const API_URL = "https://itunes.apple.com/search?limit=25&media=music&term=";
 
-// DOM
+// Elementos del DOM
 const artistInput = document.getElementById("artistInput");
 const startGameButton = document.getElementById("startGameButton");
-const message = document.getElementById("message");
-
-const setupSection = document.getElementById("setup");
-const gameSection = document.getElementById("game");
-
+const messageElement = document.getElementById("message");
 const audioPlayer = document.getElementById("audioPlayer");
-const songGuess = document.getElementById("songGuess");
-const submitGuessButton = document.getElementById("submitGuessButton");
-const skipButton = document.getElementById("skipButton");
 
-const feedback = document.getElementById("feedback");
-const currentScore = document.getElementById("currentScore");
-
-// Variables del juego
 let tracks = [];
-let currentTrack = null;
-let score = 0;
+let selectedTrack = null;
 
-// --- EVENTO PARA INICIAR JUEGO ---
+// Evento del botón
 startGameButton.addEventListener("click", () => {
     const artist = artistInput.value.trim();
 
     if (artist === "") {
-        message.textContent = "Introduce un artista.";
+        messageElement.textContent = "Introduce un artista.";
         return;
     }
 
-    fetchTracks(artist);
+    fetchArtistTracks(artist);
 });
 
-// --- OBTENER CANCIONES ---
-async function fetchTracks(artist) {
-    message.textContent = "Buscando canciones...";
+// Función para obtener canciones desde iTunes
+async function fetchArtistTracks(artistName) {
+    messageElement.textContent = "Buscando canciones...";
+    startGameButton.disabled = true;
 
     try {
-        const url = API_URL + encodeURIComponent(artist);
+        const url = API_URL + encodeURIComponent(artistName);
         const res = await fetch(url);
         const data = await res.json();
 
+        // Filtrar solo canciones con preview
         tracks = data.results.filter(t => t.previewUrl);
 
         if (tracks.length === 0) {
-            message.textContent = "No se encontraron canciones con preview.";
+            messageElement.textContent = "No hay previews disponibles.";
+            startGameButton.disabled = false;
             return;
         }
 
-        // Ocultar setup, mostrar el juego
-        setupSection.classList.add("hidden");
-        gameSection.classList.remove("hidden");
-
-        score = 0;
-        currentScore.textContent = score;
-
-        startRound();
-
-    } catch (err) {
-        console.log(err);
-        message.textContent = "Error al conectar.";
+        startGame();
+    } catch (error) {
+        console.error("Error:", error);
+        messageElement.textContent = "Error conectando al servidor.";
     }
+
+    startGameButton.disabled = false;
 }
 
-// --- INICIAR UNA RONDA ---
-function startRound() {
-    feedback.textContent = "";
-    songGuess.value = "";
+// Iniciar el juego con una canción aleatoria
+function startGame() {
+    selectedTrack = tracks[Math.floor(Math.random() * tracks.length)];
 
-    // Elegir canción aleatoria
-    currentTrack = tracks[Math.floor(Math.random() * tracks.length)];
-
-    // Reproducir
-    audioPlayer.src = currentTrack.previewUrl;
+    audioPlayer.src = selectedTrack.previewUrl;
     audioPlayer.play();
+
+    messageElement.textContent = "Escucha y adivina la canción!";
 }
 
-// --- BOTÓN ENVIAR ---
-submitGuessButton.addEventListener("click", () => {
-    checkAnswer();
-});
-
-// --- BOTÓN SALTAR ---
-skipButton.addEventListener("click", () => {
-    feedback.textContent = "❌ Saltaste la canción.";
-    nextSong();
-});
-
-// --- REVISAR RESPUESTA ---
-function checkAnswer() {
-    const guess = songGuess.value.trim().toLowerCase();
-    const real = currentTrack.trackName.toLowerCase();
-
-    if (guess === "") return;
-
-    if (real.includes(guess)) {
-        feedback.textContent = "✅ ¡Correcto!";
-        score++;
-    } else {
-        feedback.textContent = `❌ Incorrecto. Era: ${currentTrack.trackName}`;
-    }
-
-    currentScore.textContent = score;
-    nextSong();
-}
-
-// --- SIGUIENTE CANCIÓN ---
-function nextSong() {
     setTimeout(() => {
         startRound();
     }, 1500);
 }
+
