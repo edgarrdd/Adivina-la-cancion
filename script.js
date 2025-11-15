@@ -72,6 +72,17 @@ async function fetchTracks(artist) {
     }
 }
 
+// ----------- NORMALIZAR TEXTO -----------
+// Quita tildes, paréntesis, signos y pasa todo a minúsculas
+function normalize(text) {
+    return text
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // tildes
+        .replace(/\(.*?\)/g, "") // contenido entre paréntesis
+        .replace(/[^a-z0-9 ]/g, "") // caracteres especiales
+        .trim();
+}
+
 // INICIAR UNA CANCIÓN
 function startRound() {
     feedback.textContent = "";
@@ -100,11 +111,12 @@ skipButton.addEventListener("click", () => {
 
 // REVISAR RESPUESTA
 function checkAnswer() {
-    const guess = songGuess.value.trim().toLowerCase();
-    const real = currentTrack.trackName.toLowerCase();
+    const guess = normalize(songGuess.value.trim());
+    const real = normalize(currentTrack.trackName);
 
     if (guess === "") return;
 
+    // Acierto si el guess está contenido en el nombre real
     if (real.includes(guess)) {
         feedback.textContent = "✅ ¡Correcto!";
         score++;
