@@ -1,31 +1,21 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
     <title>Adivina la Canción</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <h1>Adivina la Canción 🎧</h1>
+    <h1>🎵 Adivina la Canción (Spotify)</h1>
 
-    <section id="setup">
-        <input type="text" id="artistInput" placeholder="Nombre del artista..." />
-        <button id="startGameButton">Iniciar Juego</button>
+    <div id="game-container">
+        <input id="artist" type="text" placeholder="Nombre del artista">
+        <button id="startGame">Iniciar Juego</button>
         <p id="message"></p>
-    </section>
 
-    <section id="game" class="hidden">
-        <p id="feedback"></p>
         <audio id="audioPlayer" controls></audio>
-
-        <input type="text" id="songGuess" placeholder="Adivina la canción..." />
-        <button id="submitGuessButton">Enviar respuesta</button>
-        <button id="skipButton">Saltar</button>
-
-        <h3>Puntuación: <span id="currentScore">0</span></h3>
-    </section>
+    </div>
 
     <script src="script.js"></script>
 
