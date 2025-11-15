@@ -73,19 +73,13 @@ async function fetchTracks(artist) {
 }
 
 // ----------- NORMALIZAR TEXTO -----------
-// Quita tildes, paréntesis, artista, “feat”, “remix”, signos, etc.
+// Quita tildes, paréntesis, signos y pasa todo a minúsculas
 function normalize(text) {
-    if (!text) return "";
-
     return text
         .toLowerCase()
-        .replace(/ - .*/g, "")         // elimina " - artista", " - remix", etc
-        .replace(/\(.*?\)/g, "")       // elimina paréntesis
-        .replace(/feat\.?.*/g, "")     // feat
-        .replace(/ft\.?.*/g, "")       // ft
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "") // tildes
-        .replace(/[^a-z0-9 ]/g, "")    // signos raros
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // tildes
+        .replace(/\(.*?\)/g, "") // contenido entre paréntesis
+        .replace(/[^a-z0-9 ]/g, "") // caracteres especiales
         .trim();
 }
 
@@ -122,7 +116,7 @@ function checkAnswer() {
 
     if (guess === "") return;
 
-    // Coincidencia flexible
+    // Acierto si el guess está contenido en el nombre real
     if (real.includes(guess)) {
         feedback.textContent = "✅ ¡Correcto!";
         score++;
@@ -147,8 +141,5 @@ function endGame() {
     audioPlayer.src = "";
 }
 
-    feedback.innerHTML = `🎉 Fin del juego<br>Puntuación final: <strong>${score}/10</strong>`;
-    audioPlayer.src = "";
-}
 
 
