@@ -1,15 +1,12 @@
-// server.js — Backend para buscar canciones en Spotify
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 
 const app = express();
-
-// Render asigna un puerto dinámico
 const PORT = process.env.PORT || 3000;
 
-// Permitir CORS desde GitHub Pages y localhost
+// Permitir peticiones desde GitHub Pages y local
 app.use(cors({
     origin: [
         'https://edgarrdd.github.io',
@@ -26,15 +23,16 @@ async function getSpotifyToken() {
         {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization':
-                    'Basic ' + Buffer.from(`${process.env.CLIENT_ID}:${process.env.CLIENT_SECRET}`).toString('base64')
+                'Authorization': 'Basic ' + Buffer.from(
+                    `${process.env.CLIENT_ID}:${process.env.CLIENT_SECRET}`
+                ).toString('base64')
             }
         }
     );
     return result.data.access_token;
 }
 
-// Buscar canciones
+// Endpoint de canciones
 app.get('/api/get-tracks/:artist', async (req, res) => {
     try {
         const artistName = req.params.artist;
@@ -66,10 +64,7 @@ app.get('/api/get-tracks/:artist', async (req, res) => {
             return res.status(404).json({ error: "No se encontraron canciones con preview." });
         }
 
-        res.json({
-            artistName,
-            tracks
-        });
+        res.json({ artistName, tracks });
 
     } catch (err) {
         console.error(err);
@@ -77,13 +72,6 @@ app.get('/api/get-tracks/:artist', async (req, res) => {
     }
 });
 
-// Iniciar servidor
 app.listen(PORT, () =>
-    console.log(`Servidor backend ON en puerto ${PORT}`)
+    console.log(`Servidor backend ONLINE en puerto ${PORT}`)
 );
-
-
-app.listen(PORT, () =>
-    console.log(`Servidor backend ON en http://127.0.0.1:${PORT}`)
-);
-
