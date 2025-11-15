@@ -1,76 +1,74 @@
-// URL del backend en Render
-const BACKEND_URL = "https://spotify-backend-8i9z.onrender.com/api/get-tracks";
+let cancionActual = null;
+let intentos = 3;
 
-// Elementos del DOM
-const artistInput = document.getElementById("artist");
-const startGameButton = document.getElementById("startGame");
-const messageElement = document.getElementById("message");
-const audioPlayer = document.getElementById("audioPlayer");
+async function buscarCanciones(artista) {
+    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(artista)}&entity=song&limit=20`;
 
-let tracks = [];
-let selectedTrack = null;
+    const response = await fetch(url);
+    const data = await response.json();
 
-// Evento del botón
-startGameButton.addEventListener("click", () => {
-    const artist = artistInput.value.trim();
-    console.log("Botón clicado, artista:", artist);
+    const tracks = data.results
+        .filter(t => t.previewUrl)
+        .map(t => ({
+            name: t.trackName,
+            preview: t.previewUrl,
+            artist: t.artistName
+        }));
 
-    if (artist === "") {
-        messageElement.textContent = "Introduce un artista.";
+    return tracks;
+}
+
+document.getElementById("btn-juego").addEventListener("click", async () => {
+    const artista = document.getElementById("input-artista").value.trim();
+    const mensaje = document.getElementById("mensaje");
+
+    if (!artista) {
+        mensaje.innerText = "Escribe un artista.";
         return;
     }
 
-    fetchArtistTracks(artist);
-});
+    mensaje.innerText = "Buscando canciones...";
 
-// Función que obtiene canciones desde el backend
-async function fetchArtistTracks(artistName) {
-    console.log("fetchArtistTracks llamado con:", artistName);
+    const canciones = await buscarCanciones(artista);
 
-    messageElement.textContent = "Buscando canciones...";
-    startGameButton.disabled = true;
-
-    try {
-        const url = `${BACKEND_URL}/${encodeURIComponent(artistName)}`;
-        console.log("Haciendo fetch a:", url);
-
-        const res = await fetch(url);
-        console.log("Respuesta recibida:", res);
-
-        if (!res.ok) {
-            messageElement.textContent = "No se encontraron canciones.";
-            startGameButton.disabled = false;
-            return;
-        }
-
-        const data = await res.json();
-        console.log("Datos JSON recibidos:", data);
-
-        tracks = data.tracks;
-
-        if (tracks.length === 0) {
-            messageElement.textContent = "No hay previews disponibles.";
-            startGameButton.disabled = false;
-            return;
-        }
-
-        startGame();
-    } catch (error) {
-        console.error("Error en fetch:", error);
-        messageElement.textContent = "Error conectando al servidor.";
+    if (canciones.length === 0) {
+        mensaje.innerText = "No se encontraron canciones.";
+        return;
     }
 
-    startGameButton.disabled = false;
-}
+    intentos = 3;
 
-// Iniciar el juego con una canción aleatoria
-function startGame() {
-    selectedTrack = tracks[Math.floor(Math.random() * tracks.length)];
+    // escoger canción aleatoria
+    cancionActual = canciones[Math.floor(Math.random() * canciones.length)];
 
-    console.log("Canción escogida:", selectedTrack);
+    mensaje.innerText = `Reproduciendo canción de: ${cancionActual.artist}`;
 
-    audioPlayer.src = selectedTrack.preview;
-    audioPlayer.play();
+    const audio = document.getElementById("reproductor");
+    audio.src = cancionActual.preview;
+    audio.play();
+});
 
-    messageElement.textContent = "Escucha y adivina la canción!";
-}
+document.getElementById("btn-enviar").addEventListener("click", () => {
+    const respuesta = document.getElementById("input-respuesta").value.trim().toLowerCase();
+    const resultado = document.getElementById("resultado");
+
+    if (!cancionActual) {
+        resultado.innerText = "Primero inicia el juego.";
+        return;
+    }
+
+    if (respuesta === cancionActual.name.toLowerCase()) {
+        resultado.innerText = "🎉 ¡Correcto! Era: " + cancionActual.name;
+        return;
+    }
+
+    intentos--;
+
+    if (intentos > 0) {
+        resultado.innerText = `❌ Incorrecto. Te quedan ${intentos} intento(s).`;
+    } else {
+        resultado.innerText = `😢 Perdiste. La canción era: ${cancionActual.name}`;
+        cancionActual = null;
+    }
+});
+
