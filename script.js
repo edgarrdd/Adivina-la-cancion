@@ -40,7 +40,10 @@ document.getElementById("login-button").addEventListener("click", async () => {
 // Juego: buscar canciones y mostrar opciones
 async function iniciarJuego() {
   const token = localStorage.getItem("spotify_token");
-  if (!token) return;
+  if (!token) {
+    alert("No hay token. Inicia sesión primero.");
+    return;
+  }
 
   const artista = document.getElementById("artista").value.trim();
   if (!artista) {
@@ -48,34 +51,52 @@ async function iniciarJuego() {
     return;
   }
 
-  const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(artista)}&type=track&limit=10`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const data = await res.json();
-  const tracks = data.tracks.items.filter(t => t.preview_url);
+  try {
+    const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(artista)}&type=track&limit=10`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
 
-  if (tracks.length < 3) {
-    alert("No hay suficientes canciones con preview.");
-    return;
+    // 👀 Depuración: ver todo lo que devuelve Spotify
+    console.log("Respuesta completa de Spotify:", data);
+
+    if (!data.tracks || data.tracks.items.length === 0) {
+      alert("No se encontraron canciones para ese artista.");
+      return;
+    }
+
+    const tracks = data.tracks.items.filter(t => t.preview_url);
+
+    // 👀 Depuración: ver cuántos previews hay
+    console.log("Tracks con preview:", tracks);
+
+    if (tracks.length === 0) {
+      alert("Este artista no tiene previews disponibles en Spotify.");
+      return;
+    }
+
+    const correct = tracks[Math.floor(Math.random() * tracks.length)];
+    const opciones = [...tracks].sort(() => Math.random() - 0.5);
+
+    document.getElementById("preview").src = correct.preview_url;
+    document.getElementById("juego").style.display = "block";
+
+    const contenedor = document.getElementById("opciones");
+    contenedor.innerHTML = "";
+    opciones.forEach(track => {
+      const btn = document.createElement("button");
+      btn.textContent = track.name;
+      btn.className = "opcion";
+      btn.onclick = () => {
+        document.getElementById("resultado").textContent =
+          track.name === correct.name ? "✅ ¡Correcto!" : `❌ Incorrecto. Era: ${correct.name}`;
+      };
+      contenedor.appendChild(btn);
+    });
+  } catch (error) {
+    console.error("Error al conectar con Spotify:", error);
+    alert("Error al conectar con Spotify. Revisa la consola para más detalles.");
   }
-
-  const correct = tracks[Math.floor(Math.random() * tracks.length)];
-  const opciones = [...tracks].sort(() => Math.random() - 0.5);
-
-  document.getElementById("preview").src = correct.preview_url;
-  document.getElementById("juego").style.display = "block";
-
-  const contenedor = document.getElementById("opciones");
-  contenedor.innerHTML = "";
-  opciones.forEach(track => {
-    const btn = document.createElement("button");
-    btn.textContent = track.name;
-    btn.onclick = () => {
-      document.getElementById("resultado").textContent =
-        track.name === correct.name ? "✅ ¡Correcto!" : `❌ Incorrecto. Era: ${correct.name}`;
-    };
-    contenedor.appendChild(btn);
-  });
 }
 
 // Al cargar index.html, si ya hay token, muestra el campo de búsqueda
