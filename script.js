@@ -27,6 +27,7 @@ const scopes = [
   'user-read-playback-state'
 ];
 
+// Botón de login
 document.getElementById("login-button").addEventListener("click", async () => {
   const codeVerifier = generateRandomString(128);
   const codeChallenge = await generateCodeChallenge(codeVerifier);
@@ -41,8 +42,13 @@ async function iniciarJuego() {
   const token = localStorage.getItem("spotify_token");
   if (!token) return;
 
-  const artista = "Bad Bunny"; // Cambia o hazlo dinámico
-  const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(artista)}&type=track&limit=5`, {
+  const artista = document.getElementById("artista").value.trim();
+  if (!artista) {
+    alert("Escribe un nombre de artista.");
+    return;
+  }
+
+  const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(artista)}&type=track&limit=10`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   const data = await res.json();
@@ -72,11 +78,12 @@ async function iniciarJuego() {
   });
 }
 
-// Al cargar index.html, si ya hay token, inicia el juego
-window.onload = () => {
+// Al cargar index.html, si ya hay token, muestra el campo de búsqueda
+window.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("spotify_token");
   if (token) {
-    iniciarJuego();
+    document.getElementById("login-button").style.display = "none";
+    document.getElementById("busqueda").style.display = "block";
   }
-};
+});
 
