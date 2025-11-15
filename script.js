@@ -1,5 +1,5 @@
 // URL de la API de iTunes
-const API_URL = "https://itunes.apple.com/search?limit=50&media=music&term=";
+const API_URL = "https://itunes.apple.com/search?limit=25&media=music&term=";
 
 // DOM
 const artistInput = document.getElementById("artistInput");
@@ -21,7 +21,6 @@ const currentScore = document.getElementById("currentScore");
 let tracks = [];
 let currentTrack = null;
 let score = 0;
-let trackIndex = 0; // Para avanzar por las 10 canciones
 
 // --- EVENTO PARA INICIAR JUEGO ---
 startGameButton.addEventListener("click", () => {
@@ -44,7 +43,6 @@ async function fetchTracks(artist) {
         const res = await fetch(url);
         const data = await res.json();
 
-        // Filtrar canciones con preview
         tracks = data.results.filter(t => t.previewUrl);
 
         if (tracks.length === 0) {
@@ -52,18 +50,11 @@ async function fetchTracks(artist) {
             return;
         }
 
-        // Mezclar canciones (shuffle)
-        tracks = tracks.sort(() => Math.random() - 0.5);
-
-        // Limitar a 10 canciones
-        tracks = tracks.slice(0, 10);
-
-        // Pasamos de la pantalla de inicio al juego
+        // Ocultar setup, mostrar el juego
         setupSection.classList.add("hidden");
         gameSection.classList.remove("hidden");
 
         score = 0;
-        trackIndex = 0;
         currentScore.textContent = score;
 
         startRound();
@@ -76,35 +67,29 @@ async function fetchTracks(artist) {
 
 // --- INICIAR UNA RONDA ---
 function startRound() {
-
-    if (trackIndex >= tracks.length) {
-        endGame();
-        return;
-    }
-
     feedback.textContent = "";
     songGuess.value = "";
 
-    // Obtener la canción actual
-    currentTrack = tracks[trackIndex];
+    // Elegir canción aleatoria
+    currentTrack = tracks[Math.floor(Math.random() * tracks.length)];
 
     // Reproducir
     audioPlayer.src = currentTrack.previewUrl;
     audioPlayer.play();
 }
 
-// --- REVISAR RESPUESTA ---
+// --- BOTÓN ENVIAR ---
 submitGuessButton.addEventListener("click", () => {
     checkAnswer();
 });
 
-// --- SALTAR ---
+// --- BOTÓN SALTAR ---
 skipButton.addEventListener("click", () => {
-    feedback.textContent = "⏭ Canción saltada.";
+    feedback.textContent = "❌ Saltaste la canción.";
     nextSong();
 });
 
-// --- VALIDAR RESPUESTA ---
+// --- REVISAR RESPUESTA ---
 function checkAnswer() {
     const guess = songGuess.value.trim().toLowerCase();
     const real = currentTrack.trackName.toLowerCase();
@@ -112,34 +97,26 @@ function checkAnswer() {
     if (guess === "") return;
 
     if (real.includes(guess)) {
-        feedback.textContent = "✔ ¡Correcto!";
+        feedback.textContent = "✅ ¡Correcto!";
         score++;
     } else {
         feedback.textContent = `❌ Incorrecto. Era: ${currentTrack.trackName}`;
     }
 
     currentScore.textContent = score;
-
     nextSong();
 }
 
 // --- SIGUIENTE CANCIÓN ---
 function nextSong() {
-    trackIndex++;
-
     setTimeout(() => {
         startRound();
-    }, 1200);
+    }, 1500);
 }
 
-// --- FINAL DEL JUEGO ---
-function endGame() {
-    feedback.innerHTML = `🎉 <strong>Fin del juego</strong><br>
-                          Tu puntuación final es: <strong>${score}/10</strong>`;
-    audioPlayer.pause();
-}
 
     }, 1500);
 }
+
 
 
