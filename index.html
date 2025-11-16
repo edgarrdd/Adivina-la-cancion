@@ -5,61 +5,63 @@
   <title>Adivina la Canción - Multijugador</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="style.css">
-  <style>
-    /* CSS mínimo para que se vea ok */
-    .hidden { display: none; }
-    body { font-family: system-ui, Arial; max-width: 900px; margin: 24px auto; padding: 12px; }
-    input, button { padding: 8px; margin: 6px 0; font-size: 16px; }
-    #playerList li { margin: 4px 0; }
-  </style>
 </head>
 <body>
-  <section id="menu">
+  <section id="menu" class="active">
     <h1>🎵 Adivina la Canción - Multijugador</h1>
-    <button id="createRoomBtn">Crear Sala</button>
-    <button id="joinRoomBtn">Unirse a Sala</button>
+    <div class="controls">
+      <button id="createRoomBtn">Crear Sala</button>
+      <button id="joinRoomBtn">Unirse a Sala</button>
+    </div>
   </section>
 
   <section id="createRoom" class="hidden">
     <h3>Crear Sala</h3>
     <input id="roomCodeCreate" placeholder="Código (opcional, 4 letras)">
     <input id="playerNameCreate" placeholder="Tu nombre">
-    <button id="createRoomConfirm">Crear</button>
-    <button id="backFromCreate">Volver</button>
+    <div>
+      <button id="createRoomConfirm">Crear</button>
+      <button id="backFromCreate">Volver</button>
+    </div>
   </section>
 
   <section id="joinRoom" class="hidden">
     <h3>Unirse a Sala</h3>
     <input id="roomCodeJoin" placeholder="Código de sala">
     <input id="playerNameJoin" placeholder="Tu nombre">
-    <button id="joinRoomConfirm">Entrar</button>
-    <button id="backFromJoin">Volver</button>
+    <div>
+      <button id="joinRoomConfirm">Entrar</button>
+      <button id="backFromJoin">Volver</button>
+    </div>
   </section>
 
   <section id="lobby" class="hidden">
     <h3>Sala: <span id="roomCodeDisplay"></span></h3>
     <p>Jugadores (máx 6):</p>
-    <ul id="playerList"></ul>
-    <button id="startMultiplayerGame" class="hidden">Iniciar Partida (host)</button>
-    <button id="leaveLobby">Salir de la sala</button>
+    <ul id="playerList" class="players"></ul>
+    <div class="lobby-controls">
+      <button id="startMultiplayerGame" class="hidden">Iniciar Partida (host)</button>
+      <button id="leaveLobby">Salir de la sala</button>
+    </div>
   </section>
 
   <section id="game" class="hidden">
     <h2 id="feedback"></h2>
-    <p>Puntuación: <span id="currentScore">0</span> /10</p>
+    <p class="score">Puntuación: <span id="currentScore">0</span> /10</p>
     <audio id="audioPlayer" controls></audio>
-    <div>
+    <div class="guess-row">
       <input id="songGuess" placeholder="Adivina la canción">
       <button id="submitGuessButton">Enviar</button>
       <button id="skipButton">Saltar</button>
     </div>
-    <div>
+
+    <div class="right-col">
       <h4>Ranking</h4>
       <ol id="ranking"></ol>
     </div>
   </section>
 
-  <!-- tu script.js como módulo -->
+  <!-- script.js debe estar en la misma carpeta -->
   <script type="module" src="script.js"></script>
 </body>
 </html>
