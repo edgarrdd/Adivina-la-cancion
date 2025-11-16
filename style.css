@@ -1,18 +1,78 @@
+/* GENERAL */
 body {
-    font-family: Arial;
-    background: #111;
+    font-family: Arial, sans-serif;
+    background: #0f0f0f;
     color: white;
     text-align: center;
     margin: 0;
-    padding: 30px;
+    padding: 0;
+}
+
+h1, h2, h3 {
+    font-weight: 600;
 }
 
 input, button {
-    padding: 10px;
-    margin: 10px;
-    font-size: 1.2em;
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: none;
+    margin: 5px;
 }
 
-.hidden {
+input {
+    width: 250px;
+}
+
+button {
+    background: #ff4757;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #ff6b81;
+}
+
+/* SECCIONES (pantallas) */
+section {
     display: none;
+    margin-top: 50px;
+}
+
+section.active {
+    display: block;
+}
+
+/* LISTA DE JUGADORES */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+.players li {
+    background: #1e1e1e;
+    padding: 10px;
+    width: 200px;
+    margin: 8px auto;
+    border-radius: 8px;
+}
+
+/* AUDIO */
+audio {
+    margin-top: 20px;
+    width: 300px;
+}
+
+/* FEEDBACK */
+#feedback {
+    font-size: 22px;
+    margin-bottom: 15px;
+}
+
+/* PUNTOS */
+.score {
+    font-size: 22px;
+    margin-top: 10px;
 }
