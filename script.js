@@ -68,8 +68,8 @@ let roomCode = null;
 let playerName = null;
 let isHost = false;
 let myScore = 0;
-let tracks = [];       // track list saved in room (same for all)
-let myIndex = 0;       // my current song index (per-player)
+let tracks = [];
+let myIndex = 0;
 let roomListener = null;
 
 // =================== UTILIDADES ===================
@@ -81,8 +81,13 @@ function genCode(len = 4) {
 }
 
 function normalize(text = "") {
-  return (text + "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/\(.*?\)/g, "").replace(/[^a-z0-9 ]/g, "").trim();
+  return (text + "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\(.*?\)/g, "")
+    .replace(/[^a-z0-9 ]/g, "")
+    .trim();
 }
 
 // =================== NAVEGACIÓN ===================
@@ -108,7 +113,6 @@ createRoomConfirm.onclick = async () => {
 
   const roomRef = ref(db, `rooms/${roomCode}`);
 
-  // Create room and set artist in settings, plus initial player entry
   await set(roomRef, {
     settings: { artist },
     gameState: "waiting",
@@ -134,9 +138,8 @@ joinRoomConfirm.onclick = async () => {
 
   const room = rootSnap.val();
   const countPlayers = room.players ? Object.keys(room.players).length : 0;
-  if (countPlayers >= 6) { alert("Sala llena (6 jugadores max)"); return; }
+  if (countPlayers >= 6) { alert("Sala llena (6 jugadores máx)"); return; }
 
-  // register player with default fields
   await update(ref(db, `rooms/${roomCode}/players`), {
     [playerName]: { currentSongIndex: 0, score: 0, hasFinished: false }
   });
@@ -148,16 +151,13 @@ joinRoomConfirm.onclick = async () => {
   enterLobby();
 };
 
-// =================== LOBBY & LISTENERS ===================
+// =================== LOBBY ===================
 function enterLobby() {
   createRoom.classList.add("hidden");
   joinRoom.classList.add("hidden");
   lobby.classList.remove("hidden");
   roomCodeDisplay.textContent = roomCode;
 
-  // detach old listener if any
-  // (onValue returns a function to unsubscribe, but using the returned unsubscribe requires storing it.
-  // Here we'll just rely on single session per page; if you plan multiple enters, add unsubscribe)
   const roomRef = ref(db, `rooms/${roomCode}`);
   if (roomListener) roomListener();
 
@@ -165,42 +165,31 @@ function enterLobby() {
     const data = snap.val();
     if (!data) return;
 
-    // show artist
     const artist = (data.settings && data.settings.artist) ? data.settings.artist : "—";
     roomArtist.textContent = artist;
 
-    // update listed players
     const players = data.players || {};
     updatePlayerList(players);
 
-    // show start button if host
-    if (isHost && data.gameState === "waiting") startMultiplayerGame.classList.remove("hidden");
-    else startMultiplayerGame.classList.add("hidden");
+    if (isHost && data.gameState === "waiting")
+      startMultiplayerGame.classList.remove("hidden");
+    else
+      startMultiplayerGame.classList.add("hidden");
 
-    // load tracks when playing
     if (data.gameState === "playing") {
-      // Build ordered tracks array from saved tracks object
       tracks = Object.values(data.tracks || {}).sort((a,b) => (a._idx ?? 0) - (b._idx ?? 0));
-      // read my player entry
       const myEntry = players[playerName];
       if (myEntry) {
         myIndex = myEntry.currentSongIndex || 0;
         myScore = myEntry.score || 0;
         currentScore.textContent = myScore;
-        // start UI for player
         startGameUI();
-        // play my current song (if not finished)
+
         if (!myEntry.hasFinished) playTrack(myIndex);
-        else {
-          feedback.textContent = "Has terminado. Esperando resultados...";
-        }
-      } else {
-        // If for some reason my entry missing, (re)register default
-        update(ref(db, `rooms/${roomCode}/players/${playerName}`), { currentSongIndex: 0, score: 0, hasFinished: false });
+        else feedback.textContent = "Has terminado. Esperando resultados...";
       }
     }
 
-    // results state
     if (data.gameState === "results") {
       showResults(data.players || {});
     }
@@ -209,8 +198,7 @@ function enterLobby() {
 
 function updatePlayerList(playersObj) {
   playerList.innerHTML = "";
-  const names = Object.keys(playersObj || {});
-  names.forEach(name => {
+  Object.keys(playersObj).forEach(name => {
     const li = document.createElement("li");
     const sc = playersObj[name].score || 0;
     const fin = playersObj[name].hasFinished ? "✅" : "⏳";
@@ -219,35 +207,42 @@ function updatePlayerList(playersObj) {
   });
 }
 
-// =================== START (HOST fetch tracks) ===================
+// =================== START GAME (HOST) ===================
 startMultiplayerGame.onclick = async () => {
-  // read artist from settings (or from input if host still on create)
   const settingsSnap = await get(child(ref(db), `rooms/${roomCode}/settings`));
-  const artist = settingsSnap.exists() && settingsSnap.val().artist ? settingsSnap.val().artist : (artistInput.value || "").trim();
+  const artist = settingsSnap.exists() && settingsSnap.val().artist 
+    ? settingsSnap.val().artist 
+    : (artistInput.value || "").trim();
+
   if (!artist) { alert("No hay artista definido."); return; }
 
-  // fetch tracks from iTunes
   const url = `https://itunes.apple.com/search?limit=50&media=music&term=${encodeURIComponent(artist)}`;
   const res = await fetch(url);
   const data = await res.json();
-  let picked = (data.results || []).filter(t => t.previewUrl).sort(() => Math.random() - 0.5).slice(0, 10);
-  if (picked.length === 0) { alert("No se encontraron previews para ese artista."); return; }
 
-  // format tracks as object with _idx (so clients can order)
-  const tracksObj = {};
-  for (let i = 0; i < picked.length; i++) {
-    tracksObj[i] = Object.assign({}, picked[i], { _idx: i });
+  let picked = (data.results || [])
+    .filter(t => t.previewUrl)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 10);
+
+  if (picked.length === 0) {
+    alert("No se encontraron previews para ese artista.");
+    return;
   }
 
-  // Ensure every player has the initial fields (currentSongIndex, score, hasFinished)
+  const tracksObj = {};
+  for (let i = 0; i < picked.length; i++) {
+    tracksObj[i] = { ...picked[i], _idx: i };
+  }
+
   const playersSnap = await get(child(ref(db), `rooms/${roomCode}/players`));
   const players = playersSnap.exists() ? playersSnap.val() : {};
   const playersUpdate = {};
+
   Object.keys(players).forEach(p => {
     playersUpdate[p] = { currentSongIndex: 0, score: 0, hasFinished: false };
   });
 
-  // update room: tracks + set gameState playing + reset players
   await update(ref(db, `rooms/${roomCode}`), {
     tracks: tracksObj,
     gameState: "playing",
@@ -255,7 +250,7 @@ startMultiplayerGame.onclick = async () => {
   });
 };
 
-// =================== GAME UI & PLAYBACK (per-player) ===================
+// =================== GAME UI ===================
 function startGameUI() {
   lobby.classList.add("hidden");
   resultsSection.classList.add("hidden");
@@ -263,7 +258,6 @@ function startGameUI() {
   feedback.textContent = "";
 }
 
-// play the song at index for this player (tracks array must be loaded)
 function playTrack(index) {
   if (!tracks || !tracks[index]) {
     feedback.textContent = "No hay pista disponible.";
@@ -272,22 +266,23 @@ function playTrack(index) {
   const t = tracks[index];
   myIndex = index;
   audioPlayer.src = t.previewUrl;
-  audioPlayer.play().catch(()=>{ /* el navegador puede bloquear autoplay hasta interacción */ });
+  audioPlayer.play().catch(()=>{});
   feedback.textContent = `Ronda ${index+1} / ${tracks.length}`;
   songGuess.value = "";
 }
 
-// =================== RESPONDER Y AVANZAR (solo actualiza data del jugador) ===================
 submitGuessButton.onclick = () => checkAnswer();
 skipButton.onclick = () => skipSong();
 
+// =================== RESPUESTA ===================
 async function checkAnswer() {
   if (!tracks || !tracks[myIndex]) return;
+
   const guess = normalize(songGuess.value || "");
   if (!guess) return;
 
   const real = normalize(tracks[myIndex].trackName || "");
-  let isCorrect = real.includes(guess);
+  const isCorrect = real.includes(guess);
 
   if (isCorrect) {
     myScore++;
@@ -296,38 +291,29 @@ async function checkAnswer() {
     feedback.textContent = `❌ Incorrecto — Era: ${tracks[myIndex].trackName}`;
   }
 
-  // update this player's state in RTDB
   const nextIndex = myIndex + 1;
-  const updates = { score: myScore };
+  const updates = { score: myScore, currentSongIndex: nextIndex };
+
   if (nextIndex >= tracks.length) updates.hasFinished = true;
-  updates.currentSongIndex = nextIndex;
 
   await update(ref(db, `rooms/${roomCode}/players/${playerName}`), updates);
 
-  // play next if not finished locally
-  if (!updates.hasFinished) {
-    playTrack(nextIndex);
-  } else {
-    feedback.textContent = "Has terminado. Esperando que los demás terminen...";
-  }
+  if (!updates.hasFinished) playTrack(nextIndex);
+  else feedback.textContent = "Has terminado. Esperando resultados...";
 
-  // check if all finished -> set gameState results (reader below handles)
   await checkAllFinished();
 }
 
 async function skipSong() {
-  // increment without adding score
   const nextIndex = myIndex + 1;
   const updates = { currentSongIndex: nextIndex };
+
   if (nextIndex >= tracks.length) updates.hasFinished = true;
 
   await update(ref(db, `rooms/${roomCode}/players/${playerName}`), updates);
 
-  if (!updates.hasFinished) {
-    playTrack(nextIndex);
-  } else {
-    feedback.textContent = "Has terminado (saltaste la última). Esperando resultados...";
-  }
+  if (!updates.hasFinished) playTrack(nextIndex);
+  else feedback.textContent = "Has terminado. Esperando resultados...";
 
   await checkAllFinished();
 }
@@ -336,23 +322,27 @@ async function skipSong() {
 async function checkAllFinished() {
   const playersSnap = await get(child(ref(db), `rooms/${roomCode}/players`));
   if (!playersSnap.exists()) return;
+
   const players = playersSnap.val();
-  const ids = Object.keys(players || {});
-  if (ids.length === 0) return;
+  const ids = Object.keys(players);
+
   const allFinished = ids.every(id => players[id].hasFinished === true);
+
   if (allFinished) {
-    // set global state to results
     await update(ref(db, `rooms/${roomCode}`), { gameState: "results" });
   }
 }
 
-// =================== SHOW RESULTS ===================
+// =================== RESULTADOS ===================
 function showResults(playersObj) {
   gameSection.classList.add("hidden");
   resultsSection.classList.remove("hidden");
 
-  // build ranking
-  const arr = Object.entries(playersObj || {}).map(([name, data]) => ({ name, score: (data.score || 0) }));
+  const arr = Object.entries(playersObj).map(([name, data]) => ({
+    name,
+    score: data.score || 0
+  }));
+
   arr.sort((a,b) => b.score - a.score);
 
   finalRankingDiv.innerHTML = "";
@@ -363,40 +353,13 @@ function showResults(playersObj) {
   });
 }
 
-// back to menu: clean local state and reload page
 backToMenu.onclick = () => {
   location.reload();
 };
 
-// =================== RANKING UI (live) ===================
-function updateRanking(playersObj) {
-  const arr = Object.entries(playersObj || {}).map(([name, data]) => ({ name, score: data.score || 0 }));
-  arr.sort((a,b) => b.score - a.score);
-  rankingOl.innerHTML = "";
-  arr.forEach(p => {
-    const li = document.createElement("li");
-    li.textContent = `${p.name} — ${p.score} pts`;
-    rankingOl.appendChild(li);
-  });
-}
-
-// keep ranking in lobby/game updated via the main onValue listener:
-// (we update it inside enterLobby when data.gameState is 'playing' or 'waiting')
-// also, watch for changes to players to refresh ranking display:
-onValue(ref(db, `rooms`), () => {
-  // noop; enterLobby listener handles updates per current room
-});
-
 // =================== LIMPIEZA ===================
 window.addEventListener("beforeunload", async () => {
   if (roomCode && playerName) {
-    // remove this player's entry (non-blocking)
     update(ref(db, `rooms/${roomCode}/players/${playerName}`), null).catch(()=>{});
   }
 });
-
-    update(ref(db, `rooms/${roomCode}/players/${playerName}`), null).catch(()=>{});
-  }
-});
-
-
