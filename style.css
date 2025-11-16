@@ -1,84 +1,12 @@
-/* ===========================
-   style.css — Adivina la Canción
-   =========================== */
-
+/* minimal styling */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; }
-
-body {
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-  background: linear-gradient(180deg,#071028 0%, #041022 100%);
-  color: #e6eef8;
-  padding: 28px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-section {
-  width: 100%;
-  max-width: 920px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,255,255,0.03);
-  padding: 18px;
-  border-radius: 12px;
-  box-shadow: 0 6px 22px rgba(2,6,23,0.6);
-  margin-bottom: 14px;
-}
-
-.hidden { display: none !important; }
-
-h1 { font-size: 28px; margin-bottom: 12px; color: #eaf3ff; }
-h2 { font-size: 20px; color: #dbeeff; margin-bottom: 8px; }
-h3 { font-size: 18px; color: #cfe6ff; margin-bottom: 8px; }
-
-button {
-  background: linear-gradient(180deg, #3b82f6, #2563eb);
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: transform .08s ease, box-shadow .12s ease;
-  box-shadow: 0 6px 18px rgba(37,99,235,0.12);
-}
-button:hover { transform: translateY(-2px); }
-button:active { transform: translateY(0); box-shadow: 0 3px 8px rgba(2,6,23,0.4); }
-
-input {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.06);
-  background: rgba(255,255,255,0.02);
-  color: #e6eef8;
-  margin-bottom: 10px;
-  font-size: 15px;
-}
-input::placeholder { color: rgba(230,238,248,0.45); }
-
-#menu { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
-.controls { display:flex; gap:10px; }
-
-.players { list-style: none; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 8px; max-height: 260px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.02); }
-.players li { padding: 8px; margin-bottom: 6px; border-radius: 6px; background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)); display:flex; justify-content:space-between; }
-
-.lobby-controls { display:flex; gap:10px; margin-top:10px; }
-
-#game { display: grid; gap: 10px; grid-template-columns: 1fr 300px; align-items: start; }
-#game audio { width: 100%; margin-bottom: 6px; border-radius: 8px; background: rgba(0,0,0,0.25); }
-.right-col { padding-left: 8px; }
-
-#ranking { background: rgba(255,255,255,0.02); padding: 8px; border-radius: 8px; list-style:none; min-height:120px; border: 1px solid rgba(255,255,255,0.02); }
-#ranking li { padding: 8px; margin-bottom: 6px; border-radius: 6px; background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)); }
-
-#feedback { font-size: 16px; padding: 8px; border-radius: 8px; color: #f0f9ff; min-height: 40px; }
-.score { font-size: 18px; margin-bottom: 8px; }
-
-@media (max-width: 880px) {
-  #game { grid-template-columns: 1fr; }
-  body { padding: 16px; }
-}
-
-
+body { font-family: Inter, Arial, sans-serif; background: #071028; color: #e6eef8; padding: 20px; display:flex; justify-content:center; }
+section { width:100%; max-width:920px; background: rgba(255,255,255,0.02); border-radius:10px; padding:16px; margin-bottom:12px; }
+.hidden { display:none; }
+.controls { display:flex; gap:8px; }
+input, button { padding:8px 10px; border-radius:8px; border: none; font-size:15px; }
+button { background:#2563eb; color:white; cursor:pointer; }
+.players { list-style:none; padding:6px; }
+.players li { padding:8px; background:rgba(255,255,255,0.02); margin-bottom:6px; border-radius:6px; display:flex; justify-content:space-between; }
+#game { display:grid; grid-template-columns: 1fr 300px; gap:12px; align-items:start; }
+@media (max-width:880px) { #game { grid-template-columns:1fr; } }
