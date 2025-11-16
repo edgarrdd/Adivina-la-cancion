@@ -19,6 +19,7 @@
     <h3>Crear Sala</h3>
     <input id="roomCodeCreate" placeholder="Código (opcional, 4 letras)">
     <input id="playerNameCreate" placeholder="Tu nombre">
+    <input id="artistInput" placeholder="Artista (ej: Adele) - el host lo elige">
     <div>
       <button id="createRoomConfirm">Crear</button>
       <button id="backFromCreate">Volver</button>
@@ -37,6 +38,7 @@
 
   <section id="lobby" class="hidden">
     <h3>Sala: <span id="roomCodeDisplay"></span></h3>
+    <p>Artista: <strong id="roomArtist">—</strong></p>
     <p>Jugadores (máx 6):</p>
     <ul id="playerList" class="players"></ul>
     <div class="lobby-controls">
@@ -61,7 +63,14 @@
     </div>
   </section>
 
+  <section id="results" class="hidden">
+    <h2>Resultados</h2>
+    <div id="finalRanking"></div>
+    <button id="backToMenu">Volver al menú</button>
+  </section>
+
   <!-- script.js debe estar en la misma carpeta -->
   <script type="module" src="script.js"></script>
 </body>
 </html>
+
